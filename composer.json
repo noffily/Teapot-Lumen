@@ -1,0 +1,12 @@
+{
+    "name": "noffily/teapot-lumen",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrey Chepurnyj",
+            "email": "noffily@gmail.com"
+        }
+    ],
+    "require": {}
+}
