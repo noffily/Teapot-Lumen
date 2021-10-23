@@ -1,0 +1,54 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Laravel\Lumen\Application;
+use Noffily\Teapot\Core\Runner;
+use Noffily\Teapot\Core\Emitter;
+use Illuminate\Http\Request;
+
+require 'vendor/autoload.php';
+
+$app = new Application();
+
+$app->router->get('/', function() {
+    return '<a href="/hello/world">Try /hello/world</a>';
+});
+
+$app->router->get('/hello/{name}', function ($name) {
+    return "Hello, $name";
+});
+
+$emitter = new Emitter(Closure::fromCallable(function ($request) use ($app) {
+    return $app->handle($request);
+}));
+
+class TestCase {
+    public function testHomePage(Runner $runner)
+    {
+        $request = Request::create('/');
+        $runner->addRequest($request);
+        $result = $runner->execute();
+
+        $result->seeResponseCodeIs(200);
+        $result->seeResponseBodyContentsIs('<a href="/hello/world">Try /hello/world</a>');
+    }
+
+    public function testHello(Runner $runner)
+    {
+        $request = Request::create('/hello/noffily');
+        $runner->addRequest($request);
+        $result = $runner->execute();
+
+        $result->seeResponseCodeIs(200);
+        $result->seeResponseBodyContentsIs('Hello, noffily');
+    }
+}
+
+$testCase = new TestCase();
+$testCase->testHello(new Runner($emitter));
+$testCase->testHomePage(new Runner($emitter));
+
+echo 'done';
+
