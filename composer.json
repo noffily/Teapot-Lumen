@@ -17,7 +17,9 @@
     "require": {
         "php": ">=8.0",
         "laravel/lumen-framework": "^8.3",
-        "noffily/teapot": "dev-main"
+        "noffily/teapot": "dev-main",
+        "nyholm/psr7": "^1.4",
+        "symfony/psr-http-message-bridge": "^2.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"

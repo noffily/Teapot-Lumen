@@ -7,6 +7,8 @@ use Laravel\Lumen\Application;
 use Noffily\Teapot\Core\Runner;
 use Noffily\Teapot\Core\Emitter;
 use Illuminate\Http\Request;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 
 require 'vendor/autoload.php';
 
@@ -20,16 +22,18 @@ $app->router->get('/hello/{name}', function ($name) {
     return "Hello, $name";
 });
 
-$emitter = new Emitter(Closure::fromCallable(function ($request) use ($app) {
-    return $app->handle($request);
+$psr17Factory = new Psr17Factory();
+$psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+
+$emitter = new Emitter(Closure::fromCallable(function ($request) use ($app, $psrHttpFactory) {
+    return $psrHttpFactory->createResponse($app->handle($request));
 }));
 
 class TestCase {
     public function testHomePage(Runner $runner)
     {
         $request = Request::create('/');
-        $runner->addRequest($request);
-        $result = $runner->execute();
+        $result = $runner->execute($request);
 
         $result->seeResponseCodeIs(200);
         $result->seeResponseBodyContentsIs('<a href="/hello/world">Try /hello/world</a>');
@@ -38,8 +42,7 @@ class TestCase {
     public function testHello(Runner $runner)
     {
         $request = Request::create('/hello/noffily');
-        $runner->addRequest($request);
-        $result = $runner->execute();
+        $result = $runner->execute($request);
 
         $result->seeResponseCodeIs(200);
         $result->seeResponseBodyContentsIs('Hello, noffily');
